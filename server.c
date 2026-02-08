@@ -90,8 +90,9 @@ void read_message(int* read_size, int* client_socket_fd, char* client_message){
     *read_size = recv(*client_socket_fd, client_message, DEFAULT_BUFLEN, 0);
     
     client_message[*read_size] = '\0';
-    printf("Primljena poruka od klijenta: %s\n", client_message);
-    
+    if(*read_size>0){
+        printf("Primljena poruka od klijenta: %s\n", client_message);
+    }
 
     if(*read_size == 0)
     {
@@ -118,7 +119,7 @@ void send_message(int* client_socket_fd, char* server_message){ // send message
     }
     else
     {
-        printf("Poruka je spremna za slanje klijentu:\n %s\n", server_message);
+        printf("Poruka je spremna za slanje klijentu:\n\"%s\"\n", server_message);
     }
 }
 
@@ -275,11 +276,11 @@ int main(int argc , char *argv[])
 
             if(!compare_name_analog(test.name, &(test.value)))
             {
-                strcpy(server_message,"Pogresna komanda\0");
+                strcpy(server_message,"Modul nije pronađen!\0");
             }
             else
             {
-                list_analog(client_message,server_message,tmp, sizeof(tmp));
+                strcpy(server_message,"Uspesno ste promenili vrednost analognog modula!\0");
             }
         }
         if(client_message[0]-'0' == 4){
@@ -288,14 +289,14 @@ int main(int argc , char *argv[])
 
             if(!compare_name_digital(test.name, &(test.value)))
             {
-                strcpy(server_message,"Pogresna komanda\0");
+                strcpy(server_message,"Modul nije pronađen!\0");
             }
             else
             {
-                list_digital(client_message,server_message,tmp, sizeof(tmp));
+                strcpy(server_message,"Uspesno ste promenili vrednost digitalnog modula!\0");
             }
-            compare_name_digital(test.name, &(test.value));
-            list_digital(client_message,server_message,tmp, sizeof(tmp));
+            //compare_name_digital(test.name, &(test.value));
+            //list_digital(client_message,server_message,tmp, sizeof(tmp));
         }
         if(client_message[0]-'0' == 5){
             close(server_socket_fd);
