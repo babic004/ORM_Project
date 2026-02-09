@@ -40,7 +40,7 @@ void menu(){
     printf("Unesite komandu: ");
 }
 
-bool is_valid_command(char command){
+bool isValidCommand(char command){
     if(command>48 && command<54){  // conversion command to int
         return true;
     }
@@ -49,29 +49,29 @@ bool is_valid_command(char command){
     }
 }
 
-void parse_command(unsigned int* c, char* command){
+void parseCommand(unsigned int* c, char* command){
     *c = command[0] - '0';
 }
 
-bool is_letter(char c){
+bool isLetter(char c){
     if((c>64 && c<91) || (c>96 && c<123))return true;
     return false;
 }
 
-void read_counter(char* input_buffer, int* counter){
-    while(input_buffer[*counter]==' ') (*counter)++; // command
+void readCounter(char* inputBuffer, int* counter){
+    while(inputBuffer[*counter]==' ') (*counter)++; // command
 }
 
-void is_end_of_buffer(char* input_buffer, int* counter, int* error){
-    if(input_buffer[*counter]!='\n'){ //end
+void isEndOfBuffer(char* inputBuffer, int* counter, int* error){
+    if(inputBuffer[*counter]!='\n'){ //end
         *error = 1;
         return;
     } 
 }
 
-void input_command(char* input_buffer, char* command, int* counter){
-    if(is_valid_command(input_buffer[*counter])){
-        command[0]=input_buffer[*counter];
+void inputCommand(char* inputBuffer, char* command, int* counter){
+    if(isValidCommand(inputBuffer[*counter])){
+        command[0]=inputBuffer[*counter];
         command[1]='\0';
         (*counter)++;
         return;
@@ -80,32 +80,32 @@ void input_command(char* input_buffer, char* command, int* counter){
     
 }
 
-bool is_number(char c){
+bool isNumber(char c){
     if(c>47 && c<58) return true;
     return false;
 }
 
-void input_name(char* input_buffer, char* name,int* counter){
+void inputName(char* inputBuffer, char* name,int* counter){
     int i;
-    /*if(is_letter(input_buffer[*counter])){ // only first character must be a letter
-        name[0]=input_buffer[*counter];
+    /*if(isLetter(inputBuffer[*counter])){ // only first character must be a letter
+        name[0]=inputBuffer[*counter];
         (*counter)++;
     }*/
-    for(i=0; is_letter(input_buffer[*counter]) || is_number(input_buffer[*counter]) ;i++,(*counter)++){ // name
-        name[i]=input_buffer[*counter];
+    for(i=0; isLetter(inputBuffer[*counter]) || isNumber(inputBuffer[*counter]) ;i++,(*counter)++){ // name
+        name[i]=inputBuffer[*counter];
     }
     name[i] = '\0';
 }
 
-void input_value(char* input_buffer, char* value, int* counter){
+void inputValue(char* inputBuffer, char* value, int* counter){
     int i;
-    for(i=0;input_buffer[*counter]>47 && input_buffer[*counter]<58;i++,(*counter)++){ //value
-        value[i]=input_buffer[*counter];
+    for(i=0;inputBuffer[*counter]>47 && inputBuffer[*counter]<58;i++,(*counter)++){ //value
+        value[i]=inputBuffer[*counter];
     }
     value[i]='\0';
 }
 
-void is_valid_input_data(char* command, char* name, char* value, int* error){
+void isValidInputData(char* command, char* name, char* value, int* error){
     if(command[0]=='\0'){
         *error=1;
         return;
@@ -140,84 +140,84 @@ void is_valid_input_data(char* command, char* name, char* value, int* error){
     if(i>3) *error=1;
 }
 
-void read_space(char* input_buffer, int* counter){
-    while(input_buffer[*counter]==' ') (*counter)++;
+void readSpace(char* inputBuffer, int* counter){
+    while(inputBuffer[*counter]==' ') (*counter)++;
 }
 
-void read_from_input_buffer(char* input_buffer, char* command, char* name, char* value, int* counter, int* error){
-    read_space(input_buffer, counter); //space
+void readFromInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* counter, int* error){
+    readSpace(inputBuffer, counter); //space
 
-    input_command(input_buffer, command, counter);
+    inputCommand(inputBuffer, command, counter);
 
-    read_space(input_buffer, counter); //space
+    readSpace(inputBuffer, counter); //space
 
-    input_name(input_buffer, name, counter);
+    inputName(inputBuffer, name, counter);
 
-    read_space(input_buffer, counter);// space
+    readSpace(inputBuffer, counter);// space
 
-    input_value(input_buffer, value, counter);
+    inputValue(inputBuffer, value, counter);
 
-    read_space(input_buffer, counter); // space
+    readSpace(inputBuffer, counter); // space
 
     *error = 0;
-    is_end_of_buffer(input_buffer, counter, error);
+    isEndOfBuffer(inputBuffer, counter, error);
     
-    is_valid_input_data(command, name, value, error);
+    isValidInputData(command, name, value, error);
 
 }
 
-void parse_input_buffer(char* input_buffer, char* command, char* name, char* value, int* error){
+void parseInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* error){
 
     int counter=0;
 
-    read_from_input_buffer(input_buffer, command, name, value, &counter, error);
+    readFromInputBuffer(inputBuffer, command, name, value, &counter, error);
 
 }
 
-void read_buffer(char* input_baffer){
-    fgets(input_baffer, MAX_BUFFER, stdin);
+void readBuffer(char* inputBuffer){
+    fgets(inputBuffer, MAX_BUFFER, stdin);
     //fpurge(stdin);
 }
 
-void fill_message(char* client_message,char* command,char* name, char* value){
+void fillMessage(char* clientMessage,char* command,char* name, char* value){
     if(command[0]=='3' || command[0]=='4'){
-        snprintf(client_message, MAX_BUFFER, "%s %s %s", command, name, value);
+        snprintf(clientMessage, MAX_BUFFER, "%s %s %s", command, name, value);
     }
     else{
-        snprintf(client_message, MAX_BUFFER, "%s", command);
+        snprintf(clientMessage, MAX_BUFFER, "%s", command);
     }
     
 }
 
-void send_message_to_server(int* client_socket_fd, char* client_message, size_t lenght_m){
-    if(send(*client_socket_fd , client_message , lenght_m, 0) < 0)
+void sendMessageToServer(int* clientSocketFd, char* clientMessage, size_t lenghtM){
+    if(send(*clientSocketFd , clientMessage , lenghtM, 0) < 0)
         {
             printf("Message sending failed");
         }
         else
         {
-            printf("Komanda \"%s\" uspesno poslata serveru\n\n", client_message);
+            printf("Komanda \"%s\" uspesno poslata serveru\n\n", clientMessage);
         }
 }
 
-void read_message_from_server(int* read_size, int* client_socket_fd, char* server_message){
+void readMessageFromServer(int* readSize, int* clientSocketFd, char* serverMessage){
     // read message
-    *read_size = recv(*client_socket_fd, server_message, DEFAULT_BUFLEN, 0);
+    *readSize = recv(*clientSocketFd, serverMessage, DEFAULT_BUFLEN, 0);
     
-    server_message[*read_size] = '\0';
-    printf("Primljena poruka: %s\n", server_message);
+    serverMessage[*readSize] = '\0';
+    printf("Primljena poruka: %s\n", serverMessage);
     
 
-    if(*read_size == 0)
+    if(*readSize == 0)
     {
         printf("Client disconnected\n\n");
 
         //Close client socket
-        close(*client_socket_fd);
+        close(*clientSocketFd);
         printf("Client socket closed\n");
 
     }
-    else if(*read_size == -1)
+    else if(*readSize == -1)
     {
         perror("Recvive clien message failed failed");
     }
@@ -225,24 +225,24 @@ void read_message_from_server(int* read_size, int* client_socket_fd, char* serve
 
 int main(int argc , char *argv[])
 {
-    int client_socket_fd;
-    struct sockaddr_in server_address;
-    char client_message[DEFAULT_BUFLEN];
+    int clientSocketFd;
+    struct sockaddr_in serverAddress;
+    char clientMessage[DEFAULT_BUFLEN];
 
 
-    char input_buffer[MAX_BUFFER];
+    char inputBuffer[MAX_BUFFER];
     char command[MAX_BUFFER];
     char name[MAX_BUFFER];
     char value[MAX_BUFFER];
-    int read_size;
+    int readSize;
     int error=0;
    
-   //char client_message[DEFAULT_BUFLEN];
-    char server_message[DEFAULT_BUFLEN];
+   //char clientMessage[DEFAULT_BUFLEN];
+    char serverMessage[DEFAULT_BUFLEN];
 
     //Create socket
-    client_socket_fd = socket(AF_INET , SOCK_STREAM , 0);
-    if (client_socket_fd == -1)
+    clientSocketFd = socket(AF_INET , SOCK_STREAM , 0);
+    if (clientSocketFd == -1)
     {
         perror("Socket creation failed");
         return EXIT_FAILURE;
@@ -253,19 +253,19 @@ int main(int argc , char *argv[])
     }
 
     //Set server IP address and port
-    server_address.sin_addr.s_addr = inet_addr(IP_ADDRESS);
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(PORT);
+    serverAddress.sin_addr.s_addr = inet_addr(IP_ADDRESS);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(PORT);
 
     //Connect to server
-    if (connect(client_socket_fd, (struct sockaddr *)&server_address , sizeof(server_address)) < 0)
+    if (connect(clientSocketFd, (struct sockaddr *)&serverAddress , sizeof(serverAddress)) < 0)
     {
         perror("Failed to connect");
         return EXIT_FAILURE;
     }
     else
     {
-        printf("Successfully connected to server [%s:%hu]\n\n", inet_ntoa(server_address.sin_addr), ntohs(server_address.sin_port));
+        printf("Successfully connected to server [%s:%hu]\n\n", inet_ntoa(serverAddress.sin_addr), ntohs(serverAddress.sin_port));
     }
 
     while(1){
@@ -273,9 +273,9 @@ int main(int argc , char *argv[])
         menu();
         error=0;
 
-        read_buffer(input_buffer); // read line in input buffer
+        readBuffer(inputBuffer); // read line in input buffer
 
-        parse_input_buffer(input_buffer, command, name, value, &error);
+        parseInputBuffer(inputBuffer, command, name, value, &error);
 
         if(error==1){
             printf("\nNeispravan format poruke! Pokusajte opet!\n");
@@ -289,16 +289,16 @@ int main(int argc , char *argv[])
             break;
         }
 
-        fill_message(client_message,command, name, value);
+        fillMessage(clientMessage,command, name, value);
 
-        send_message_to_server(&client_socket_fd, client_message, strlen(client_message));
-        read_message_from_server(&read_size, &client_socket_fd, server_message);
+        sendMessageToServer(&clientSocketFd, clientMessage, strlen(clientMessage));
+        readMessageFromServer(&readSize, &clientSocketFd, serverMessage);
     }
 
 
     //Close socket
     printf("\nUspesno ste izasli iz programa!\n\n");
-    close(client_socket_fd);
+    close(clientSocketFd);
     printf("Socket closed\n\n");
 
     return 0;

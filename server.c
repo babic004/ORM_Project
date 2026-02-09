@@ -7,8 +7,8 @@
     Godina studija: Treca (III)
     Semestar:       Zimski (V)
     
-    Ime fajla:      server_address.len
-    Opis:           TCP server_address
+    Ime fajla:      server.c
+    Opis:           TCP serverAddress
     ********************************************************************
 */
 #define IP_ADDRESS "127.0.0.1"
@@ -40,71 +40,71 @@ struct DigitalModule{
 };
 
 
-void check_arg(int * argc, char *argv[]){  // nije dobro za slucaj ./server 55a  5
+void checkArg(int * argc, char *argv[]){  // nije dobro za slucaj ./server 55a  5
     if(*argc != 3 ){
-        analog_num = digital_num = DEFAULT_NUMBER_OF_MODULES;
+        analogNum = digitalNum = DEFAULT_NUMBER_OF_MODULES;
     }
     else{
-        analog_num = atoi(argv[1]);
-        digital_num = atoi(argv[2]);
+        analogNum = atoi(argv[1]);
+        digitalNum = atoi(argv[2]);
         
-        if(analog_num<1 || analog_num>MAX_MODULES){
-            analog_num = DEFAULT_NUMBER_OF_MODULES;
+        if(analogNum<1 || analogNum>MAX_MODULES){
+            analogNum = DEFAULT_NUMBER_OF_MODULES;
         }
-        if(digital_num<1 || digital_num>MAX_MODULES){
-            digital_num = DEFAULT_NUMBER_OF_MODULES;
+        if(digitalNum<1 || digitalNum>MAX_MODULES){
+            digitalNum = DEFAULT_NUMBER_OF_MODULES;
         }
         
     }
 }
 
-struct AnalogModule analog_module[MAX_MODULES];
-struct DigitalModule digital_module[MAX_MODULES];
+struct AnalogModule analogModule[MAX_MODULES];
+struct DigitalModule digitalModule[MAX_MODULES];
 
-void fill_structure(){
-    for(int i=0;i<analog_num;i++){
-        sprintf(analog_module[i].name, "A%d", i+1);
-        analog_module[i].value = rand()%1001;
+void fillStructure(){
+    for(int i=0;i<analogNum;i++){
+        sprintf(analogModule[i].name, "A%d", i+1);
+        analogModule[i].value = rand()%1001;
     }
 
-    for(int i=0;i<digital_num;i++){
-        sprintf(digital_module[i].name, "D%d", i+1);
-        digital_module[i].value = rand()%2;
+    for(int i=0;i<digitalNum;i++){
+        sprintf(digitalModule[i].name, "D%d", i+1);
+        digitalModule[i].value = rand()%2;
     }
 }
 
-void print_structure(){
+void printStructure(){
     printf("Analogni moduli: \n");
-    for(int i=0;i<analog_num;i++){
-        printf("%s, %u\n",analog_module[i].name, (unsigned int)analog_module[i].value);
+    for(int i=0;i<analogNum;i++){
+        printf("%s, %u\n",analogModule[i].name, (unsigned int)analogModule[i].value);
     }
 
     printf("\nDigitalni moduli: \n");
 
-    for(int i=0;i<digital_num;i++){
-        printf("%s, %d\n",digital_module[i].name, digital_module[i].value);
+    for(int i=0;i<digitalNum;i++){
+        printf("%s, %d\n",digitalModule[i].name, digitalModule[i].value);
     }
 }
 
-void read_message(int* read_size, int* client_socket_fd, char* client_message){
-    *read_size = recv(*client_socket_fd, client_message, DEFAULT_BUFLEN, 0);
+void readMessage(int* readSize, int* clientSocketFd, char* clientMessage){
+    *readSize = recv(*clientSocketFd, clientMessage, DEFAULT_BUFLEN, 0);
     
-    client_message[*read_size] = '\0';
-    if(*read_size>0){
-        printf("Primljena poruka od klijenta: %s\n", client_message);
+    clientMessage[*readSize] = '\0';
+    if(*readSize>0){
+        printf("Primljena poruka od klijenta: %s\n", clientMessage);
     }
 
-    if(*read_size == 0)
+    if(*readSize == 0)
     {
         printf("Client disconnected\n\n");
 
         //Close client socket
-        close(*client_socket_fd);
+        close(*clientSocketFd);
         printf("Client socket closed\n");
         return;
 
     }
-    else if(*read_size == -1)
+    else if(*readSize == -1)
     {
         perror("Recvive client message failed failed");
         while(1){}
@@ -112,60 +112,60 @@ void read_message(int* read_size, int* client_socket_fd, char* client_message){
     }
 }
 
-void send_message(int* client_socket_fd, char* server_message){ // send message
-    if(send(*client_socket_fd , server_message , strlen(server_message), 0) < 0)
+void sendMessage(int* clientSocketFd, char* serverMessage){ // send message
+    if(send(*clientSocketFd , serverMessage , strlen(serverMessage), 0) < 0)
     {
         printf("Message sending failed");
     }
     else
     {
-        printf("Poruka je spremna za slanje klijentu:\n\"%s\"\n", server_message);
+        printf("Poruka je spremna za slanje klijentu:\n\"%s\"\n", serverMessage);
     }
 }
 
-void list_analog(char* client_message, char* server_message, char* tmp, size_t size_of_tmp){
-        strcat(server_message,"\n");
-        for(int i=0;i<analog_num;i++){
-            strcat(server_message, analog_module[i].name);
-            snprintf(tmp, size_of_tmp, " %u", analog_module[i].value);
-            strcat(server_message, tmp);
-            strcat(server_message, "\n");
+void listAnalog(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){
+        strcat(serverMessage,"\n");
+        for(int i=0;i<analogNum;i++){
+            strcat(serverMessage, analogModule[i].name);
+            snprintf(tmp, sizeOfTmp, " %u", analogModule[i].value);
+            strcat(serverMessage, tmp);
+            strcat(serverMessage, "\n");
 
         }
-        strcat(server_message,"\0");
+        strcat(serverMessage,"\0");
 }
 
-void list_digital(char* client_message, char* server_message, char* tmp, size_t size_of_tmp){
+void listDigital(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){
     {
-        strcat(server_message,"\n");
-        for(int i=0;i<digital_num;i++){
-            strcat(server_message,digital_module[i].name);
-            snprintf(tmp, size_of_tmp, " %u", digital_module[i].value);
-            strcat(server_message, tmp);
-            strcat(server_message, "\n");
+        strcat(serverMessage,"\n");
+        for(int i=0;i<digitalNum;i++){
+            strcat(serverMessage,digitalModule[i].name);
+            snprintf(tmp, sizeOfTmp, " %u", digitalModule[i].value);
+            strcat(serverMessage, tmp);
+            strcat(serverMessage, "\n");
         }
-        strcat(server_message,"\0");
+        strcat(serverMessage,"\0");
     }
 }
 
-void parse_buffer(char* buffer,int* command, char* name, unsigned int* value){
+void parseBuffer(char* buffer,int* command, char* name, unsigned int* value){
     sscanf(buffer, "%u %s %u", command, name, value);
 }
 
-bool compare_name_analog(char* name,unsigned int* value){
-    for(int i=0;i<analog_num;i++){
-        if(strcmp(name, analog_module[i].name)==0){
-            analog_module[i].value = *value;
+bool compareNameAnalog(char* name,unsigned int* value){
+    for(int i=0;i<analogNum;i++){
+        if(strcmp(name, analogModule[i].name)==0){
+            analogModule[i].value = *value;
             return 1;
         }
         
     }
     return 0;
 }
-bool compare_name_digital(char* name,unsigned int* value){
-    for(int i=0;i<digital_num;i++){
-        if(strcmp(name, digital_module[i].name)==0){
-            digital_module[i].value = *value;
+bool compareNameDigital(char* name,unsigned int* value){
+    for(int i=0;i<digitalNum;i++){
+        if(strcmp(name, digitalModule[i].name)==0){
+            digitalModule[i].value = *value;
             return 1;
         }
     }
@@ -174,32 +174,32 @@ bool compare_name_digital(char* name,unsigned int* value){
 
 int main(int argc , char *argv[])
 {
-    int server_socket_fd;
-    int client_socket_fd;
-    int read_size;
+    int serverSocketFd;
+    int clientSocketFd;
+    int readSize;
     socklen_t len;
 
-    check_arg(&argc, argv);
+    checkArg(&argc, argv);
 
     srand(time(NULL));
 
-    fill_structure();
-    print_structure();
+    fillStructure();
+    printStructure();
 
-    //printf("Analogni: %u, digitalni: %u\n", analog_num, digital_num);
+    //printf("Analogni: %u, digitalni: %u\n", analogNum, digitalNum);
 
-    struct sockaddr_in server_address;
-    struct sockaddr_in client_address;
+    struct sockaddr_in serverAddress;
+    struct sockaddr_in clientAddress;
 
-    char client_message[DEFAULT_BUFLEN];
-    char server_message[DEFAULT_BUFLEN];
+    char clientMessage[DEFAULT_BUFLEN];
+    char serverMessage[DEFAULT_BUFLEN];
 
-    client_message[0] = '\0';
-    server_message[0] = '\0';
+    clientMessage[0] = '\0';
+    serverMessage[0] = '\0';
    
     //Create socket
-    server_socket_fd = socket(AF_INET , SOCK_STREAM , 0);
-    if (server_socket_fd == -1)
+    serverSocketFd = socket(AF_INET , SOCK_STREAM , 0);
+    if (serverSocketFd == -1)
     {
         perror("Socket creation failed");
         return EXIT_FAILURE;
@@ -210,12 +210,12 @@ int main(int argc , char *argv[])
     }
 
     //Prepare the sockaddr_in structure
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(PORT);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(PORT);
 
     //Bind
-    if(bind(server_socket_fd,(struct sockaddr *)&server_address , sizeof(server_address)) < 0)
+    if(bind(serverSocketFd,(struct sockaddr *)&serverAddress , sizeof(serverAddress)) < 0)
     {
         //print the error message
         perror("Bind failed. Error");
@@ -223,27 +223,27 @@ int main(int argc , char *argv[])
     }
     else
     {
-        printf("Socket bound sccessfully to [%s:%hu]\n\n", inet_ntoa(server_address.sin_addr), ntohs(server_address.sin_port));
+        printf("Socket bound sccessfully to [%s:%hu]\n\n", inet_ntoa(serverAddress.sin_addr), ntohs(serverAddress.sin_port));
     }
 
     //Listen
-    listen(server_socket_fd , 3);
+    listen(serverSocketFd , 3);
 
     //Accept and incoming connection
     printf("Waiting for incoming connections...\n\n");
     len = sizeof(struct sockaddr_in);
 
-    //accept connection from an incoming client_address
+    //accept connection from an incoming clientAddress
     konekcija: 
-    client_socket_fd = accept(server_socket_fd, (struct sockaddr *)&client_address, (socklen_t*)&len);
-    if(client_socket_fd < 0)
+    clientSocketFd = accept(serverSocketFd, (struct sockaddr *)&clientAddress, (socklen_t*)&len);
+    if(clientSocketFd < 0)
     {
         perror("Accept client failed");
         return EXIT_FAILURE;
     }
     else
     {
-        printf("Client [%s:%hu] connection successfully accepted\n\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+        printf("Client [%s:%hu] connection successfully accepted\n\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
     }
 
     //Receive a message from client
@@ -253,62 +253,62 @@ int main(int argc , char *argv[])
    // struct DigitalModule test2;
     while(1){
 
-        read_message(&read_size, &client_socket_fd, client_message); // read message
-        if(read_size == 0){
+        readMessage(&readSize, &clientSocketFd, clientMessage); // read message
+        if(readSize == 0){
             //printf("tu sam");
             goto konekcija;
         }
-        if(read_size == -1){
+        if(readSize == -1){
             break;
         }
     
-        server_message[0] = '\0'; // clear server_message
+        serverMessage[0] = '\0'; // clear serverMessage
 
-        if(client_message[0]-'0' == 1){list_analog(client_message,server_message,tmp, sizeof(tmp));}
+        if(clientMessage[0]-'0' == 1){listAnalog(clientMessage,serverMessage,tmp, sizeof(tmp));}
         
 
-        if(client_message[0]-'0' == 2){list_digital(client_message,server_message,tmp, sizeof(tmp));}
+        if(clientMessage[0]-'0' == 2){listDigital(clientMessage,serverMessage,tmp, sizeof(tmp));}
         
         
-        if(client_message[0]-'0' == 3){
-            parse_buffer(client_message,&command, test.name, &test.value);
+        if(clientMessage[0]-'0' == 3){
+            parseBuffer(clientMessage,&command, test.name, &test.value);
             printf("Server primio poruku: %u %s %u\n",command, test.name, test.value);
 
-            if(!compare_name_analog(test.name, &(test.value)))
+            if(!compareNameAnalog(test.name, &(test.value)))
             {
-                strcpy(server_message,"Modul nije pronađen!\0");
+                strcpy(serverMessage,"Modul nije pronađen!\0");
             }
             else
             {
-                strcpy(server_message,"Uspesno ste promenili vrednost analognog modula!\0");
+                strcpy(serverMessage,"Uspesno ste promenili vrednost analognog modula!\0");
             }
         }
-        if(client_message[0]-'0' == 4){
-            parse_buffer(client_message,&command, test.name, &test.value);
+        if(clientMessage[0]-'0' == 4){
+            parseBuffer(clientMessage,&command, test.name, &test.value);
             printf("Server primio poruku: %u %s %u\n",command, test.name, test.value);
 
-            if(!compare_name_digital(test.name, &(test.value)))
+            if(!compareNameDigital(test.name, &(test.value)))
             {
-                strcpy(server_message,"Modul nije pronađen!\0");
+                strcpy(serverMessage,"Modul nije pronađen!\0");
             }
             else
             {
-                strcpy(server_message,"Uspesno ste promenili vrednost digitalnog modula!\0");
+                strcpy(serverMessage,"Uspesno ste promenili vrednost digitalnog modula!\0");
             }
-            //compare_name_digital(test.name, &(test.value));
-            //list_digital(client_message,server_message,tmp, sizeof(tmp));
+            //compareNameDigital(test.name, &(test.value));
+            //listDigital(clientMessage,serverMessage,tmp, sizeof(tmp));
         }
-        if(client_message[0]-'0' == 5){
-            close(server_socket_fd);
+        if(clientMessage[0]-'0' == 5){
+            close(serverSocketFd);
             printf("Server socket closed\n\n");
         }
  
-        send_message(&client_socket_fd, server_message);
+        sendMessage(&clientSocketFd, serverMessage);
     }
     
 
     //Close server socket
-    close(server_socket_fd);
+    close(serverSocketFd);
     printf("Server socket closed\n\n");
 
     return 0;
