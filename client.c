@@ -40,8 +40,8 @@ void menu(){
     printf("Unesite komandu: ");
 }
 
-bool isValidCommand(char command){
-    if(command>48 && command<54){  // conversion command to int
+bool isValidCommand(char command){ //checks if the character is a number between 1 and 5
+    if(command>48 && command<54){  
         return true;
     }
     else {
@@ -49,17 +49,9 @@ bool isValidCommand(char command){
     }
 }
 
-void parseCommand(unsigned int* c, char* command){
-    *c = command[0] - '0';
-}
-
-bool isLetter(char c){
-    if((c>64 && c<91) || (c>96 && c<123))return true;
+bool isLetter(char c){ //checks if the character is a letter 
+    if((c>64 && c<91) || (c>96 && c<123))return true; //uppercase and lowercase letters
     return false;
-}
-
-void readCounter(char* inputBuffer, int* counter){
-    while(inputBuffer[*counter]==' ') (*counter)++; // command
 }
 
 void isEndOfBuffer(char* inputBuffer, int* counter, int* error){
@@ -69,7 +61,7 @@ void isEndOfBuffer(char* inputBuffer, int* counter, int* error){
     } 
 }
 
-void inputCommand(char* inputBuffer, char* command, int* counter){
+void inputCommand(char* inputBuffer, char* command, int* counter){ // loading COMMAND from input buffer
     if(isValidCommand(inputBuffer[*counter])){
         command[0]=inputBuffer[*counter];
         command[1]='\0';
@@ -80,24 +72,20 @@ void inputCommand(char* inputBuffer, char* command, int* counter){
     
 }
 
-bool isNumber(char c){
+bool isNumber(char c){ //checks if the character is a number 0-9
     if(c>47 && c<58) return true;
     return false;
 }
 
 void inputName(char* inputBuffer, char* name,int* counter){
     int i;
-    /*if(isLetter(inputBuffer[*counter])){ // only first character must be a letter
-        name[0]=inputBuffer[*counter];
-        (*counter)++;
-    }*/
-    for(i=0; isLetter(inputBuffer[*counter]) || isNumber(inputBuffer[*counter]) ;i++,(*counter)++){ // name
+    for(i=0; isLetter(inputBuffer[*counter]) || isNumber(inputBuffer[*counter]) ;i++,(*counter)++){ // loading NAME from the input buffer
         name[i]=inputBuffer[*counter];
     }
     name[i] = '\0';
 }
 
-void inputValue(char* inputBuffer, char* value, int* counter){
+void inputValue(char* inputBuffer, char* value, int* counter){ // loading VALUE from the input buffer
     int i;
     for(i=0;inputBuffer[*counter]>47 && inputBuffer[*counter]<58;i++,(*counter)++){ //value
         value[i]=inputBuffer[*counter];
@@ -105,8 +93,8 @@ void inputValue(char* inputBuffer, char* value, int* counter){
     value[i]='\0';
 }
 
-void isValidInputData(char* command, char* name, char* value, int* error){
-    if(command[0]=='\0'){
+void isValidInputData(char* command, char* name, char* value, int* error){  // checking if the input is good
+    if(command[0]=='\0'){                                                   // set error flag on 1 if isn't
         *error=1;
         return;
     }
@@ -140,22 +128,22 @@ void isValidInputData(char* command, char* name, char* value, int* error){
     if(i>3) *error=1;
 }
 
-void readSpace(char* inputBuffer, int* counter){
+void readSpace(char* inputBuffer, int* counter){  // reading space
     while(inputBuffer[*counter]==' ') (*counter)++;
 }
 
-void readFromInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* counter, int* error){
+void readFromInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* counter, int* error){  // reading input data from input buffer
+    readSpace(inputBuffer, counter); //space                                                                    // set error flag on 1 if isn't good input
+
+    inputCommand(inputBuffer, command, counter);  // loading command
+
     readSpace(inputBuffer, counter); //space
 
-    inputCommand(inputBuffer, command, counter);
-
-    readSpace(inputBuffer, counter); //space
-
-    inputName(inputBuffer, name, counter);
+    inputName(inputBuffer, name, counter);  // loading name
 
     readSpace(inputBuffer, counter);// space
 
-    inputValue(inputBuffer, value, counter);
+    inputValue(inputBuffer, value, counter); // loading value
 
     readSpace(inputBuffer, counter); // space
 
@@ -166,7 +154,7 @@ void readFromInputBuffer(char* inputBuffer, char* command, char* name, char* val
 
 }
 
-void parseInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* error){
+void parseInputBuffer(char* inputBuffer, char* command, char* name, char* value, int* error){  // parsing and validating input 
 
     int counter=0;
 
@@ -174,12 +162,12 @@ void parseInputBuffer(char* inputBuffer, char* command, char* name, char* value,
 
 }
 
-void readBuffer(char* inputBuffer){
+void readBuffer(char* inputBuffer){  // reading line in input buffer
     fgets(inputBuffer, MAX_BUFFER, stdin);
     //fpurge(stdin);
 }
 
-void fillMessage(char* clientMessage,char* command,char* name, char* value){
+void fillMessage(char* clientMessage,char* command,char* name, char* value){ // filling out the message to send to the server
     if(command[0]=='3' || command[0]=='4'){
         snprintf(clientMessage, MAX_BUFFER, "%s %s %s", command, name, value);
     }
@@ -189,7 +177,7 @@ void fillMessage(char* clientMessage,char* command,char* name, char* value){
     
 }
 
-void sendMessageToServer(int* clientSocketFd, char* clientMessage, size_t lenghtM){
+void sendMessageToServer(int* clientSocketFd, char* clientMessage, size_t lenghtM){ // sending message to server
     if(send(*clientSocketFd , clientMessage , lenghtM, 0) < 0)
         {
             printf("Message sending failed");
@@ -200,7 +188,7 @@ void sendMessageToServer(int* clientSocketFd, char* clientMessage, size_t lenght
         }
 }
 
-void readMessageFromServer(int* readSize, int* clientSocketFd, char* serverMessage){
+void readMessageFromServer(int* readSize, int* clientSocketFd, char* serverMessage){ // reading message from server
     // read message
     *readSize = recv(*clientSocketFd, serverMessage, DEFAULT_BUFLEN, 0);
     
@@ -227,8 +215,6 @@ int main(int argc , char *argv[])
 {
     int clientSocketFd;
     struct sockaddr_in serverAddress;
-    char clientMessage[DEFAULT_BUFLEN];
-
 
     char inputBuffer[MAX_BUFFER];
     char command[MAX_BUFFER];
@@ -237,7 +223,7 @@ int main(int argc , char *argv[])
     int readSize;
     int error=0;
    
-   //char clientMessage[DEFAULT_BUFLEN];
+    char clientMessage[DEFAULT_BUFLEN];
     char serverMessage[DEFAULT_BUFLEN];
 
     //Create socket

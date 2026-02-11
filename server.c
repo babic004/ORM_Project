@@ -28,19 +28,7 @@
 #include "global_variables.h"
 #include <time.h>
 
-struct AnalogModule{
-    char name[MAX_LENGHT];
-    unsigned int value; 
-};
-
-
-struct DigitalModule{
-    char name[MAX_LENGHT];
-    bool value; 
-};
-
-
-void checkArg(int * argc, char *argv[]){  // nije dobro za slucaj ./server 55a  5
+void checkArg(int * argc, char *argv[]){  // checking the number of parameters when starting the program
     if(*argc != 3 ){
         analogNum = digitalNum = DEFAULT_NUMBER_OF_MODULES;
     }
@@ -58,22 +46,19 @@ void checkArg(int * argc, char *argv[]){  // nije dobro za slucaj ./server 55a  
     }
 }
 
-struct AnalogModule analogModule[MAX_MODULES];
-struct DigitalModule digitalModule[MAX_MODULES];
-
-void fillStructure(){
-    for(int i=0;i<analogNum;i++){
+void fillStructure(){                       // module initialization (once at the beginning of the program)
+    for(int i=0;i<analogNum;i++){               // for analog
         sprintf(analogModule[i].name, "A%d", i+1);
         analogModule[i].value = rand()%1001;
     }
 
-    for(int i=0;i<digitalNum;i++){
+    for(int i=0;i<digitalNum;i++){              //for digital
         sprintf(digitalModule[i].name, "D%d", i+1);
         digitalModule[i].value = rand()%2;
     }
 }
 
-void printStructure(){
+void printStructure(){              // display of all analog and digital modules
     printf("Analogni moduli: \n");
     for(int i=0;i<analogNum;i++){
         printf("%s, %u\n",analogModule[i].name, (unsigned int)analogModule[i].value);
@@ -86,7 +71,7 @@ void printStructure(){
     }
 }
 
-void readMessage(int* readSize, int* clientSocketFd, char* clientMessage){
+void readMessage(int* readSize, int* clientSocketFd, char* clientMessage){ // reading message from client
     *readSize = recv(*clientSocketFd, clientMessage, DEFAULT_BUFLEN, 0);
     
     clientMessage[*readSize] = '\0';
@@ -112,7 +97,7 @@ void readMessage(int* readSize, int* clientSocketFd, char* clientMessage){
     }
 }
 
-void sendMessage(int* clientSocketFd, char* serverMessage){ // send message
+void sendMessage(int* clientSocketFd, char* serverMessage){ // send message to client
     if(send(*clientSocketFd , serverMessage , strlen(serverMessage), 0) < 0)
     {
         printf("Message sending failed");
@@ -123,7 +108,7 @@ void sendMessage(int* clientSocketFd, char* serverMessage){ // send message
     }
 }
 
-void listAnalog(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){
+void listAnalog(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){  // filling in the message for the client with analog modules
         strcat(serverMessage,"\n");
         for(int i=0;i<analogNum;i++){
             strcat(serverMessage, analogModule[i].name);
@@ -135,7 +120,7 @@ void listAnalog(char* clientMessage, char* serverMessage, char* tmp, size_t size
         strcat(serverMessage,"\0");
 }
 
-void listDigital(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){
+void listDigital(char* clientMessage, char* serverMessage, char* tmp, size_t sizeOfTmp){  // filling in the message for the client with adigital modules
     {
         strcat(serverMessage,"\n");
         for(int i=0;i<digitalNum;i++){
@@ -148,11 +133,11 @@ void listDigital(char* clientMessage, char* serverMessage, char* tmp, size_t siz
     }
 }
 
-void parseBuffer(char* buffer,int* command, char* name, unsigned int* value){
+void parseBuffer(char* buffer,int* command, char* name, unsigned int* value){ // parsing client message to variables
     sscanf(buffer, "%u %s %u", command, name, value);
 }
 
-bool compareNameAnalog(char* name,unsigned int* value){
+bool compareNameAnalog(char* name,unsigned int* value){ // checking if the name exists in the structure
     for(int i=0;i<analogNum;i++){
         if(strcmp(name, analogModule[i].name)==0){
             analogModule[i].value = *value;
@@ -162,7 +147,7 @@ bool compareNameAnalog(char* name,unsigned int* value){
     }
     return 0;
 }
-bool compareNameDigital(char* name,unsigned int* value){
+bool compareNameDigital(char* name,unsigned int* value){ // checking if the name exists in the structure
     for(int i=0;i<digitalNum;i++){
         if(strcmp(name, digitalModule[i].name)==0){
             digitalModule[i].value = *value;
@@ -185,8 +170,6 @@ int main(int argc , char *argv[])
 
     fillStructure();
     printStructure();
-
-    //printf("Analogni: %u, digitalni: %u\n", analogNum, digitalNum);
 
     struct sockaddr_in serverAddress;
     struct sockaddr_in clientAddress;
