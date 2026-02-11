@@ -217,7 +217,7 @@ int main(int argc , char *argv[])
     len = sizeof(struct sockaddr_in);
 
     //accept connection from an incoming clientAddress
-    konekcija: 
+    connection: 
     clientSocketFd = accept(serverSocketFd, (struct sockaddr *)&clientAddress, (socklen_t*)&len);
     if(clientSocketFd < 0)
     {
@@ -238,8 +238,7 @@ int main(int argc , char *argv[])
 
         readMessage(&readSize, &clientSocketFd, clientMessage); // read message
         if(readSize == 0){
-            //printf("tu sam");
-            goto konekcija;
+            goto connection;
         }
         if(readSize == -1){
             break;
@@ -278,8 +277,6 @@ int main(int argc , char *argv[])
             {
                 strcpy(serverMessage,"Uspesno ste promenili vrednost digitalnog modula!\0");
             }
-            //compareNameDigital(test.name, &(test.value));
-            //listDigital(clientMessage,serverMessage,tmp, sizeof(tmp));
         }
         if(clientMessage[0]-'0' == 5){
             close(serverSocketFd);
